@@ -5,12 +5,29 @@ const HealthDaily = require("../models/HealthDaily");
 const auth = require("../middleware/auth");
 const { body, validationResult } = require("express-validator");
 
+// get user permission flags
+router.get("/permissions", auth, async (req, res) => {
+  try {
+    const { anonymousId } = req.user;
+    const user = await User.findOne({ anonymousId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({
+      permissions: user.healthPermission
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 // stores user permission flags
 router.put("/connect", auth, [
-    body("steps").isBoolean().withMessage("steps must be boolean"),
-    body("sleep").isBoolean().withMessage("sleep must be boolean"),
-    body("heartRate").isBoolean().withMessage("heartRate must be boolean")
-  ],
+  body("steps").isBoolean().withMessage("steps must be boolean"),
+  body("sleep").isBoolean().withMessage("sleep must be boolean"),
+  body("heartRate").isBoolean().withMessage("heartRate must be boolean")
+],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -46,11 +63,11 @@ router.put("/connect", auth, [
 
 // store daily health summary
 router.post("/sync", auth, [
-    body("steps").isNumeric().withMessage("steps must be a number"),
-    body("sleepMinutes").optional().isNumeric().withMessage("sleepMinutes must be a number"),
-    body("avgHeartRate").optional().isNumeric().withMessage("avgHeartRate must be a number"),
-    body("source").optional().isIn(["SIMULATED", "GOOGLE_FIT", "APPLE_HEALTH"])
-  ],
+  body("steps").isNumeric().withMessage("steps must be a number"),
+  body("sleepMinutes").optional().isNumeric().withMessage("sleepMinutes must be a number"),
+  body("avgHeartRate").optional().isNumeric().withMessage("avgHeartRate must be a number"),
+  body("source").optional().isIn(["SIMULATED", "GOOGLE_FIT", "APPLE_HEALTH"])
+],
   async (req, res) => {
     try {
       const errors = validationResult(req);

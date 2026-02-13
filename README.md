@@ -1,2 +1,1 @@
-# CSTinMETA
-Hello
+# Team Name: CSTinMETA
