@@ -214,7 +214,7 @@ router.post("/log", auth, [
         //Calling Ml microservice
         let mlResult = null;
         try {
-            const mlResponse = await axios.post("http://localhost:5000/predict", features);
+            const mlResponse = await axios.post("http://localhost:8000/predict", features);
             mlResult = mlResponse.data;
         } catch (error) {
             // fallback if ML service fails
