@@ -11,7 +11,6 @@ const UserSchema = new mongoose.Schema(
 
     email: {
       type: String,
-      default: null,
       unique: true,
       sparse: true
     },
@@ -51,7 +50,7 @@ const UserSchema = new mongoose.Schema(
     },
 
     onboardingCompleted: {
-      type: Boolean,  
+      type: Boolean,
       default: false
     },
 
