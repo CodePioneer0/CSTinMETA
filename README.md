@@ -4,6 +4,21 @@
 
 ---
 
+## Table of Contents
+
+- [1. Project Overview](#1-project-overview)
+- [2. Tech Stack](#2-tech-stack)
+- [3. System Architecture](#3-system-architecture)
+- [4. Setup & Installation](#4-setup--installation)
+- [5. APIs Used](#5-apis-used)
+- [6. Machine Learning Models](#6-machine-learning-models)
+- [7. Running the Project](#7-running-the-project)
+- [8. Deployment](#8-deployment)
+- [9. Evaluation & Judging Notes](#9-evaluation--judging-notes)
+- [10. Future Improvements](#10-future-improvements)
+
+---
+
 ## 1. Project Overview
 
 ### Problem Statement
