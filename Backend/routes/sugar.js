@@ -10,6 +10,10 @@ const auth = require("../middleware/auth");
 const User = require("../models/User");
 const axios = require("axios");
 const { body, validationResult } = require("express-validator");
+const dotenv = require("dotenv");
+dotenv.config();
+
+const ML_SERVICE_URL = process.env.ML_SERVICE_URL;
 
 function getDateString(dateObj) {
     return dateObj.toISOString().split("T")[0];
@@ -214,7 +218,7 @@ router.post("/log", auth, [
         //Calling Ml microservice
         let mlResult = null;
         try {
-            const mlResponse = await axios.post("http://localhost:8000/predict", features);
+            const mlResponse = await axios.post(`${ML_SERVICE_URL}/predict`, features);
             mlResult = mlResponse.data;
         } catch (error) {
             // fallback if ML service fails
