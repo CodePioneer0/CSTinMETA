@@ -93,7 +93,7 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 | Tool    | Purpose                                     |
 | ------- | ------------------------------------------- |
 | Vercel  | Frontend static hosting (configured)        |
-| uvicorn | ASGI server for FastAPI ML service           |
+| Render  | Backend and ML service hosting              |
 
 ---
 
