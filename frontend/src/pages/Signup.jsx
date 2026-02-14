@@ -50,7 +50,7 @@ export default function Signup() {
       <div className="orb-orange-xl bottom-[-50px] left-[-80px]" style={{ position: 'absolute' }} />
 
       {/* Left — Decorative */}
-      <div className="w-[45%] flex flex-col items-center justify-center relative z-10 border-r border-white/5 bg-dark-900/20">
+      <div className="w-[45%] hidden lg:flex flex-col items-center justify-center relative z-10 border-r border-white/5 bg-dark-900/20">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -70,14 +70,14 @@ export default function Signup() {
       </div>
 
       {/* Right — Signup form */}
-      <div className="flex-1 flex items-center justify-center px-12 relative z-10">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-8 lg:px-12 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md"
         >
-          <div className="mb-10">
-            <h1 className="font-display text-3xl font-bold text-white">Create Account</h1>
+          <div className="mb-8 sm:mb-10">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">Create Account</h1>
             <p className="text-dark-400 mt-2">Save your progress and sync across devices</p>
           </div>
 

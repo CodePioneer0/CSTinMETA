@@ -49,10 +49,10 @@ export default function Dashboard() {
   return (
     <AnimatedPage className="py-2 space-y-6">
       {/* Top row — Score hero + Stats + Quick action */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
         {/* Sugar Score Card — big hero */}
-        <Card className="!p-8 col-span-5">
-          <div className="flex items-center gap-8">
+        <Card className="!p-5 sm:!p-8 xl:col-span-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8">
             <SugarScoreRing score={data.sugarScore} />
             <div className="flex-1 space-y-4">
               <div>
@@ -71,7 +71,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Stats grid — right side */}
-        <div className="col-span-4">
+        <div className="xl:col-span-4">
           <StatsGrid
             xp={data.xp}
             level={data.level}
@@ -81,7 +81,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Log CTA card */}
-        <Card className="!p-6 col-span-3 flex flex-col justify-between">
+        <Card className="!p-5 sm:!p-6 xl:col-span-3 flex flex-col justify-between">
           <div>
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-royal-500/20 to-sugar-500/20 border border-royal-500/20 flex items-center justify-center mb-4">
               <PlusCircle size={22} className="text-royal-400" />
@@ -96,9 +96,9 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom row — Today's logs + Badges side by side */}
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Today's Logs — wider left */}
-        <div className="col-span-7">
+        <div className="lg:col-span-7">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-semibold text-lg text-white flex items-center gap-2">
               <Sparkles size={18} className="text-sugar-400" />
@@ -112,7 +112,7 @@ export default function Dashboard() {
         </div>
 
         {/* Badges — right column */}
-        <div className="col-span-5">
+        <div className="lg:col-span-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display font-semibold text-lg text-white flex items-center gap-2">
               <TrendingUp size={18} className="text-gold-400" />

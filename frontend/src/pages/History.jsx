@@ -88,19 +88,19 @@ export default function History() {
 
   return (
     <AnimatedPage className="py-2 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <p className="text-dark-400 text-sm mt-1">Track your sugar journey over time</p>
         </div>
         {/* Range + Tab selectors — top right */}
-        <div className="flex items-center gap-4">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full lg:w-auto">
+          <div className="flex flex-wrap gap-2">
             {dayRanges.map((r) => (
               <motion.button
                 key={r.value}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setDays(r.value)}
-                className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-medium transition-all ${
                   days === r.value
                     ? 'bg-royal-500/20 border border-royal-500/40 text-royal-300'
                     : 'bg-white/5 border border-white/10 text-dark-400 hover:text-white'
@@ -110,12 +110,12 @@ export default function History() {
               </motion.button>
             ))}
           </div>
-          <div className="flex gap-1 p-1 bg-white/5 rounded-xl">
+          <div className="flex gap-1 p-1 bg-white/5 rounded-xl w-full sm:w-auto">
             {['sugar', 'insights'].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all capitalize ${
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold transition-all capitalize ${
                   tab === t
                     ? 'bg-royal-500/20 text-royal-300 shadow-sm'
                     : 'text-dark-400 hover:text-white'
@@ -139,11 +139,11 @@ export default function History() {
       {loading ? (
         <LoadingSpinner text="Fetching history..." />
       ) : tab === 'sugar' ? (
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
           {/* Chart — left, wide */}
-          <div className="col-span-7">
+          <div className="lg:col-span-7">
             {chartData().length > 0 ? (
-              <Card className="!p-6">
+              <Card className="!p-4 sm:!p-6">
                 <h3 className="text-sm text-dark-300 font-semibold mb-4 flex items-center gap-2">
                   <Calendar size={14} /> Daily Sugar Events
                 </h3>
@@ -178,7 +178,7 @@ export default function History() {
           </div>
 
           {/* Sugar Event List — right */}
-          <div className="col-span-5">
+          <div className="lg:col-span-5">
             <Card className="!p-4">
               <h3 className="text-sm font-semibold text-dark-300 mb-3">Recent Events</h3>
               <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
@@ -214,7 +214,7 @@ export default function History() {
         </div>
       ) : (
         /* Insights Tab — grid layout */
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {insights.length === 0 ? (
             <Card className="!p-8 text-center col-span-2">
               <p className="text-dark-400 text-sm">No insights yet</p>

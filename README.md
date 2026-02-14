@@ -40,6 +40,7 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 - **Anonymous-First Authentication** — Users start instantly without signup; they can optionally upgrade to email/password to persist data across devices.
 - **Health Data Integration** — Steps, sleep, and heart rate data feed into ML predictions for higher accuracy.
 - **Visual Analytics Dashboard** — Sugar score ring, stats grid, XP progress bar, badge collection, and interactive bar charts for historical trends.
+- **Responsive Multi-Device UI** — Core pages, navigation, dashboards, forms, and auth screens now adapt across mobile, tablet, and desktop breakpoints.
 - **Graceful Fallbacks** — If the ML service or LLM is unavailable, hardcoded fallback insights and actions are returned so the user experience is never broken.
 
 ---
@@ -620,7 +621,7 @@ Add your production frontend URL to the `allowedOrigins` array in `Backend/serve
 
 - The ML model (`risk_model.pkl`) is pre-trained; training data and training scripts are not included in the repository.
 - Health data (steps, sleep) is manually synced by the user; there is no direct Google Fit / Apple Health API integration yet.
-- The frontend is optimized for desktop widescreen (1080p+); mobile responsiveness is limited.
+- The UI is responsive across modern phones, tablets, and desktops, but very small screens may still have tighter content density on data-heavy views.
 - Anonymous session tokens expire after 1 hour; users must sign up for long-term data persistence.
 - Sugar gram estimation uses a static lookup table per item type (e.g., CHAI = 12g, COLD_DRINK = 35g).
 - The Groq LLM prompt explicitly avoids medical/diagnostic language; insights are wellness-oriented, not medical advice.
@@ -641,7 +642,7 @@ Add your production frontend URL to the `allowedOrigins` array in `Backend/serve
 ### Feature Enhancements
 
 - **Native health API integration** — Direct Google Fit and Apple HealthKit APIs for automatic step/sleep/heart rate syncing.
-- **Mobile-responsive UI** — Adapt the glassmorphic layout for smartphones and tablets.
+- **Responsive UX polish** — Further optimize micro-interactions and chart readability for very small screens.
 - **Social features** — Leaderboards, friend challenges, and shared streaks.
 - **Improved image detection** — Fine-tune IMAGGA tag mapping or integrate a custom food-classification model for higher accuracy.
 - **Custom sugar items** — Let users define custom food items with their own sugar gram estimates.

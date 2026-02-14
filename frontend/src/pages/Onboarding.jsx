@@ -119,12 +119,12 @@ export default function Onboarding() {
   const currentStep = steps[step];
 
   return (
-    <div className="min-h-screen bg-dark-950 noise-bg relative overflow-hidden flex">
+    <div className="min-h-screen bg-dark-950 noise-bg relative overflow-hidden flex flex-col lg:flex-row">
       <div className="orb-purple-xl top-[-100px] right-[-100px]" style={{ position: 'absolute' }} />
       <div className="orb-orange top-[60%] left-[-50px]" style={{ position: 'absolute' }} />
 
       {/* Left — Decorative panel */}
-      <div className="w-[400px] xl:w-[480px] flex flex-col justify-center px-12 xl:px-16 border-r border-white/5 bg-dark-900/30 relative z-10">
+      <div className="w-[400px] xl:w-[480px] hidden lg:flex flex-col justify-center px-12 xl:px-16 border-r border-white/5 bg-dark-900/30 relative z-10">
         <div className="mb-8">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-royal-500 to-sugar-500 flex items-center justify-center shadow-lg shadow-royal-500/25 mb-6">
             <Sparkles size={22} className="text-white" />
@@ -166,8 +166,8 @@ export default function Onboarding() {
       </div>
 
       {/* Right — Form content */}
-      <div className="flex-1 flex flex-col justify-center px-16 xl:px-24 relative z-10">
-        <div className="max-w-md">
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-8 lg:px-16 xl:px-24 py-8 lg:py-0 relative z-10">
+        <div className="max-w-md w-full mx-auto lg:mx-0">
           {/* Progress bar */}
           <div className="flex gap-2 mb-8">
             {steps.map((_, i) => (
@@ -217,13 +217,13 @@ export default function Onboarding() {
                 )}
 
                 {currentStep.field === 'gender' && (
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     {genders.map((g) => (
                       <motion.button
                         key={g.value}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setForm({ ...form, gender: g.value })}
-                        className={`flex flex-col items-center gap-3 p-6 rounded-xl border transition-all duration-200 ${form.gender === g.value
+                        className={`flex flex-col items-center gap-3 p-4 sm:p-6 rounded-xl border transition-all duration-200 ${form.gender === g.value
                           ? 'bg-royal-500/10 border-royal-500/50 shadow-lg shadow-royal-500/10'
                           : 'bg-white/5 border-white/10 hover:border-white/20'
                           }`}
@@ -246,7 +246,7 @@ export default function Onboarding() {
                       placeholder="170"
                       min="50"
                       max="300"
-                      className="w-full glass-sm px-5 py-4 text-white bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-royal-500/50 focus:ring-1 focus:ring-royal-500/30 transition-all text-3xl font-bold placeholder:text-dark-600 pr-16"
+                      className="w-full glass-sm px-5 py-4 text-white bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-royal-500/50 focus:ring-1 focus:ring-royal-500/30 transition-all text-2xl sm:text-3xl font-bold placeholder:text-dark-600 pr-16"
                     />
                     <span className="absolute right-5 top-1/2 -translate-y-1/2 text-dark-400 text-sm font-medium">
                       cm
@@ -263,7 +263,7 @@ export default function Onboarding() {
                       placeholder="65"
                       min="10"
                       max="400"
-                      className="w-full glass-sm px-5 py-4 text-white bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-royal-500/50 focus:ring-1 focus:ring-royal-500/30 transition-all text-3xl font-bold placeholder:text-dark-600 pr-16"
+                      className="w-full glass-sm px-5 py-4 text-white bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-royal-500/50 focus:ring-1 focus:ring-royal-500/30 transition-all text-2xl sm:text-3xl font-bold placeholder:text-dark-600 pr-16"
                     />
                     <span className="absolute right-5 top-1/2 -translate-y-1/2 text-dark-400 text-sm font-medium">
                       kg

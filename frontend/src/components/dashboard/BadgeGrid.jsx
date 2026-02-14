@@ -13,7 +13,7 @@ const allBadges = Object.keys(badgeConfig);
 
 export default function BadgeGrid({ earned = [] }) {
   return (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
       {allBadges.map((key) => {
         const badge = badgeConfig[key];
         const isEarned = earned.includes(key);
@@ -31,8 +31,8 @@ export default function BadgeGrid({ earned = [] }) {
             }`}
             title={badge.desc}
           >
-            <span className="text-xl">{badge.emoji}</span>
-            <span className="text-[9px] text-center text-dark-300 font-medium leading-tight">
+            <span className="text-lg sm:text-xl">{badge.emoji}</span>
+            <span className="text-[8px] sm:text-[9px] text-center text-dark-300 font-medium leading-tight">
               {badge.label}
             </span>
             {!isEarned && (

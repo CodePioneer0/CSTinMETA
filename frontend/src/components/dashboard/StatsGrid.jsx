@@ -48,15 +48,15 @@ export default function StatsGrid({ xp = 0, level = 1, streakCount = 0, bestStre
   ];
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 gap-3 h-full">
+    <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 gap-2 sm:gap-3 h-full">
       {stats.map((s) => (
         <motion.div
           key={s.label}
           variants={item}
-          className={`flex flex-col items-center justify-center p-4 rounded-xl bg-gradient-to-b ${s.bg} border ${s.border}`}
+          className={`flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-gradient-to-b ${s.bg} border ${s.border}`}
         >
           <s.icon size={18} className={s.color} />
-          <span className="text-2xl font-bold font-display text-white mt-1.5">{s.value}</span>
+          <span className="text-xl sm:text-2xl font-bold font-display text-white mt-1.5">{s.value}</span>
           <span className="text-xs text-dark-400 font-medium">{s.label}</span>
         </motion.div>
       ))}

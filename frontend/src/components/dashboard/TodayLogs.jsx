@@ -38,7 +38,7 @@ function formatItemType(type) {
 export default function TodayLogs({ logs = [] }) {
   if (logs.length === 0) {
     return (
-      <div className="glass-sm p-6 text-center">
+      <div className="glass-sm p-5 sm:p-6 text-center">
         <p className="text-dark-400 text-sm">No sugar logged today</p>
         <p className="text-dark-500 text-xs mt-1">Tap + to log your first item</p>
       </div>
@@ -54,13 +54,13 @@ export default function TodayLogs({ logs = [] }) {
           <motion.div
             key={log._id || i}
             variants={item}
-            className="glass-sm p-3 flex items-center gap-3 glass-hover"
+            className="glass-sm p-3 flex items-center gap-2 sm:gap-3 glass-hover"
           >
             <div className={`w-9 h-9 rounded-lg ${entry.bg} flex items-center justify-center flex-shrink-0`}>
               <Icon size={18} className={entry.color} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+              <p className="text-xs sm:text-sm font-medium text-white truncate">
                 {formatItemType(log.itemType)}
               </p>
               <p className="text-[11px] text-dark-400">

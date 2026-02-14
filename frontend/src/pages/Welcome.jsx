@@ -74,14 +74,14 @@ export default function Welcome() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 noise-bg relative overflow-hidden flex">
+    <div className="min-h-screen bg-dark-950 noise-bg relative overflow-hidden flex flex-col lg:flex-row">
       {/* Background effects */}
       <div className="orb-purple-xl top-[-200px] left-[10%]" style={{ position: 'absolute' }} />
       <div className="orb-orange-xl bottom-[-100px] right-[5%]" style={{ position: 'absolute' }} />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-royal-600/5 rounded-full blur-[120px]" />
 
       {/* Left panel — Hero */}
-      <div className="flex-1 flex flex-col justify-center px-16 xl:px-24 relative z-10">
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-8 lg:px-16 xl:px-24 pt-10 lg:pt-0 relative z-10">
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
@@ -93,13 +93,13 @@ export default function Welcome() {
               <Sparkles size={32} className="text-white" />
             </div>
             <div>
-              <h1 className="font-display text-5xl xl:text-6xl font-extrabold tracking-tight">
+              <h1 className="font-display text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight">
                 Sugar<span className="gradient-text">Sense</span>
               </h1>
             </div>
           </div>
 
-          <p className="text-dark-300 text-xl leading-relaxed mb-10 max-w-lg">
+          <p className="text-dark-300 text-lg sm:text-xl leading-relaxed mb-8 sm:mb-10 max-w-lg">
             Track your sugar intake, get <span className="text-royal-400 font-medium">AI-powered risk predictions</span>, and build
             healthier habits with gamified wellness tracking
           </p>
@@ -122,8 +122,8 @@ export default function Welcome() {
       </div >
 
       {/* Right panel — Feature cards grid */}
-      < div className="w-[520px] xl:w-[580px] flex items-center pr-12 xl:pr-20 relative z-10" >
-        <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 gap-4 w-full">
+      <div className="w-full lg:w-[520px] xl:w-[580px] flex items-center px-4 sm:px-8 lg:pr-12 xl:pr-20 pb-8 lg:pb-0 relative z-10">
+        <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
           {features.map((f) => (
             <motion.div
               key={f.title}
@@ -143,13 +143,13 @@ export default function Welcome() {
           {/* Tech stack badge */}
           <motion.div
             variants={item}
-            className="col-span-2 glass-sm p-4 flex items-center gap-3 border border-white/5"
+            className="sm:col-span-2 glass-sm p-4 flex flex-col sm:flex-row sm:items-center gap-3 border border-white/5"
           >
             <div className="flex items-center gap-2">
               <Zap size={14} className="text-gold-400" />
               <span className="text-xs text-dark-400">Powered by</span>
             </div>
-            <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-2 text-[11px] flex-wrap">
               <span className="px-2 py-1 rounded-md bg-royal-500/10 text-royal-400 border border-royal-500/20">React</span>
               <span className="px-2 py-1 rounded-md bg-mint-500/10 text-mint-400 border border-mint-500/20">FastAPI ML</span>
               <span className="px-2 py-1 rounded-md bg-sugar-500/10 text-sugar-400 border border-sugar-500/20">Groq LLM</span>
@@ -157,7 +157,7 @@ export default function Welcome() {
             </div>
           </motion.div>
         </motion.div>
-      </div >
+      </div>
     </div >
   );
 }

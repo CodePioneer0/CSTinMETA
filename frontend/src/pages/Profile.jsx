@@ -73,9 +73,9 @@ export default function Profile() {
         <p className="text-dark-400 text-sm mt-1">Manage your account and preferences</p>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Left — User Card + Actions */}
-        <div className="col-span-5 space-y-5">
+        <div className="lg:col-span-5 space-y-5">
           {/* User Card */}
           <Card className="!p-6">
             <div className="flex items-center gap-5">
@@ -120,9 +120,9 @@ export default function Profile() {
         </div>
 
         {/* Right — Menu Items */}
-        <div className="col-span-7">
+        <div className="lg:col-span-7">
           <h3 className="text-sm font-semibold text-dark-300 mb-4 uppercase tracking-wider">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {menuItems.map((item, i) => (
               <motion.button
                 key={i}
@@ -131,7 +131,7 @@ export default function Profile() {
                 transition={{ delay: i * 0.08 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={item.action}
-                className="glass-sm p-5 flex flex-col items-start gap-3 glass-hover text-left"
+                className="glass-sm p-4 sm:p-5 flex flex-col items-start gap-3 glass-hover text-left"
               >
                 <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center`}>
                   <item.icon size={22} className={item.color} />

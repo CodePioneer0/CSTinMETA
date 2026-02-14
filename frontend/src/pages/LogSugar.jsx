@@ -102,19 +102,19 @@ export default function LogSugar() {
   return (
     <AnimatedPage className="py-2 space-y-6">
       {/* Header & Tabs */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <p className="text-dark-400 text-sm mt-1">Log your sugar intake</p>
-        <div className="flex bg-white/5 p-1 rounded-lg border border-white/10">
+        <div className="flex bg-white/5 p-1 rounded-lg border border-white/10 w-full sm:w-auto">
           <button
             onClick={() => setActiveTab('manual')}
-            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'manual' ? 'bg-royal-500 text-white shadow-lg shadow-royal-500/20' : 'text-dark-400 hover:text-white'
+            className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'manual' ? 'bg-royal-500 text-white shadow-lg shadow-royal-500/20' : 'text-dark-400 hover:text-white'
               }`}
           >
             Manual
           </button>
           <button
             onClick={() => setActiveTab('camera')}
-            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${activeTab === 'camera' ? 'bg-royal-500 text-white shadow-lg shadow-royal-500/20' : 'text-dark-400 hover:text-white'
+            className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${activeTab === 'camera' ? 'bg-royal-500 text-white shadow-lg shadow-royal-500/20' : 'text-dark-400 hover:text-white'
               }`}
           >
             <Camera size={14} />
@@ -123,9 +123,9 @@ export default function LogSugar() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
         {/* Left — Content Area */}
-        <div className="col-span-8">
+        <div className="lg:col-span-8 order-2 lg:order-1">
           <AnimatePresence mode="wait">
             {activeTab === 'manual' ? (
               <motion.div
@@ -136,20 +136,20 @@ export default function LogSugar() {
                 transition={{ duration: 0.2 }}
               >
                 <h3 className="text-sm font-semibold text-dark-300 mb-3 uppercase tracking-wider">What did you have?</h3>
-                <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-5 gap-3">
+                <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                   {sugarItems.map((s) => (
                     <motion.button
                       key={s.type}
                       variants={item}
                       whileTap={{ scale: 0.92 }}
                       onClick={() => setSelected(s.type)}
-                      className={`flex flex-col items-center gap-2.5 p-5 rounded-xl border transition-all duration-200 ${selected === s.type
+                      className={`flex flex-col items-center gap-2 sm:gap-2.5 p-3 sm:p-4 lg:p-5 rounded-xl border transition-all duration-200 ${selected === s.type
                           ? 'bg-royal-500/15 border-royal-500/50 shadow-lg shadow-royal-500/10 scale-[1.02]'
                           : 'bg-white/3 border-white/8 hover:bg-white/5 hover:border-white/15'
                         }`}
                     >
-                      <span className="text-3xl">{s.emoji}</span>
-                      <span className={`text-xs font-medium ${selected === s.type ? 'text-royal-300' : 'text-dark-300'}`}>
+                      <span className="text-2xl sm:text-3xl">{s.emoji}</span>
+                      <span className={`text-[11px] sm:text-xs font-medium text-center ${selected === s.type ? 'text-royal-300' : 'text-dark-300'}`}>
                         {s.label}
                       </span>
                     </motion.button>
@@ -170,7 +170,7 @@ export default function LogSugar() {
                 {!previewUrl ? (
                   <div
                     onClick={triggerFileInput}
-                    className="h-64 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-royal-500/50 hover:bg-white/3 transition-all group"
+                    className="h-56 sm:h-64 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-royal-500/50 hover:bg-white/3 transition-all group"
                   >
                     <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                       <Camera className="text-dark-300 group-hover:text-royal-300 transition-colors" size={32} />
@@ -179,7 +179,7 @@ export default function LogSugar() {
                     <p className="text-dark-400 text-sm mt-1">We'll detect the sugar content</p>
                   </div>
                 ) : (
-                  <div className="relative h-64 rounded-2xl overflow-hidden group border border-white/10">
+                  <div className="relative h-56 sm:h-64 rounded-2xl overflow-hidden group border border-white/10">
                     <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                       <button
@@ -210,9 +210,9 @@ export default function LogSugar() {
         </div>
 
         {/* Right — Quantity + Submit */}
-        <div className="col-span-4 space-y-5">
+        <div className="lg:col-span-4 space-y-5 order-1 lg:order-2">
           {/* Quantity Selector */}
-          <div className="glass-sm p-6">
+          <div className="glass-sm p-5 sm:p-6">
             <p className="text-sm font-semibold text-white mb-1">Quantity</p>
             <p className="text-xs text-dark-400 mb-5">How many servings?</p>
             <div className="flex items-center justify-center gap-6">
@@ -228,7 +228,7 @@ export default function LogSugar() {
                   key={quantity}
                   initial={{ scale: 1.3, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="text-4xl font-bold font-display text-white w-14 text-center"
+                  className="text-3xl sm:text-4xl font-bold font-display text-white w-14 text-center"
                 >
                   {quantity}
                 </motion.span>

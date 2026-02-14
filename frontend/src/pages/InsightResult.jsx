@@ -95,9 +95,9 @@ export default function InsightResult() {
   return (
     <AnimatedPage className="py-4 pb-12 space-y-8">
       {/* Header Section */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl text-white font-bold flex items-center gap-3">
+          <h1 className="font-display text-xl sm:text-2xl text-white font-bold flex items-center gap-3">
             <Brain className="text-royal-400" />
             AI Analysis Result
           </h1>
@@ -105,7 +105,7 @@ export default function InsightResult() {
             Based on your recent logs and health data
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+        <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/10 w-fit">
           <Zap className="text-gold-400" size={18} />
           <span className="text-white font-semibold">+{pointsAwarded} XP Earned</span>
         </div>
@@ -212,12 +212,12 @@ export default function InsightResult() {
           className="md:col-span-2"
         >
           <Card className={`!p-1 overflow-hidden transition-all duration-500 ${actionDone ? 'border-mint-500/50 shadow-lg shadow-mint-500/10' : 'border-white/10'}`}>
-            <div className={`p-8 rounded-[14px] ${actionDone ? 'bg-mint-500/10' : 'bg-gradient-to-r from-royal-500/10 to-transparent'}`}>
-              <div className="flex flex-col md:flex-row md:items-center gap-8">
+            <div className={`p-5 sm:p-8 rounded-[14px] ${actionDone ? 'bg-mint-500/10' : 'bg-gradient-to-r from-royal-500/10 to-transparent'}`}>
+              <div className="flex flex-col md:flex-row md:items-center gap-6 sm:gap-8">
 
                 {/* Icon & Text */}
-                <div className="flex-1 flex items-start gap-6">
-                  <div className="text-6xl filter drop-shadow-lg animate-bounce-slow">
+                <div className="flex-1 flex items-start gap-4 sm:gap-6">
+                  <div className="text-5xl sm:text-6xl filter drop-shadow-lg animate-bounce-slow">
                     {actionInfo.emoji}
                   </div>
                   <div className="space-y-2">
@@ -231,7 +231,7 @@ export default function InsightResult() {
                         </span>
                       )}
                     </div>
-                    <h3 className="text-2xl font-display font-bold text-white">
+                    <h3 className="text-xl sm:text-2xl font-display font-bold text-white">
                       {actionInfo.label}
                     </h3>
                     <p className="text-dark-300 max-w-lg">

@@ -24,7 +24,7 @@ export default function Sidebar() {
   const { logout } = useAuth();
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-dark-900/80 backdrop-blur-2xl border-r border-white/5 z-50 flex flex-col">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-dark-900/80 backdrop-blur-2xl border-r border-white/5 z-50 hidden lg:flex flex-col">
       {/* Brand */}
       <div className="h-16 flex items-center gap-3 px-6 border-b border-white/5">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-royal-500 to-sugar-500 flex items-center justify-center shadow-lg shadow-royal-500/25">

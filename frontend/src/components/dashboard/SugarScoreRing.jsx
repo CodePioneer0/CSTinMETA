@@ -16,7 +16,7 @@ export default function SugarScoreRing({ score = 0 }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-32 h-32">
+      <div className="relative w-28 h-28 sm:w-32 sm:h-32">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
           {/* Background ring */}
           <circle
@@ -49,7 +49,7 @@ export default function SugarScoreRing({ score = 0 }) {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, duration: 0.5, type: 'spring' }}
-            className="text-3xl font-bold font-display text-white"
+            className="text-2xl sm:text-3xl font-bold font-display text-white"
           >
             {score}
           </motion.span>

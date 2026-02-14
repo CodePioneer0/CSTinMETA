@@ -47,12 +47,12 @@ export default function Badges() {
 
     return (
         <AnimatedPage className="py-2 space-y-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                 <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                     <ChevronLeft size={20} />
                 </Button>
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-white flex items-center gap-2">
+                    <h1 className="font-display text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
                         <Award className="text-gold-400" /> Achievements
                     </h1>
                     <p className="text-dark-400 text-sm">
@@ -62,7 +62,7 @@ export default function Badges() {
             </div>
 
             {/* Progress Bar */}
-            <Card className="!p-6">
+            <Card className="!p-4 sm:!p-6">
                 <div className="flex justify-between items-end mb-2">
                     <span className="text-sm font-semibold text-white">Collection Progress</span>
                     <span className="text-2xl font-bold text-gold-400">{progress}%</span>

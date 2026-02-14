@@ -14,10 +14,10 @@ export default function BottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
       <div className="max-w-lg mx-auto">
         <div className="mx-3 mb-3 backdrop-blur-xl bg-dark-800/80 border border-white/10 rounded-2xl shadow-2xl shadow-black/50">
-          <div className="flex items-center justify-around h-16 px-2">
+          <div className="flex items-center justify-around h-16 px-1 sm:px-2">
             {navItems.map((item) => {
               const isActive =
                 item.path === '/'

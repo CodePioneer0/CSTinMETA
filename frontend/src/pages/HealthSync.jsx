@@ -81,7 +81,7 @@ export default function HealthSync() {
       <div className="max-w-2xl mx-auto">
         <Card className="!p-6">
           <h3 className="font-semibold text-base text-white mb-5">Sync Today's Health Data</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className={`col-span-2 relative ${!permissions?.steps && 'opacity-60 grayscale'}`}>
               <label className="text-xs text-dark-400 mb-1.5 block font-medium flex justify-between">
                 <span>Steps *</span>
@@ -225,7 +225,7 @@ export default function HealthSync() {
                 ))}
               </div>
 
-              <div className="pt-4 flex gap-3">
+              <div className="pt-4 flex flex-col sm:flex-row gap-3">
                 <Button variant="secondary" className="flex-1" onClick={() => setShowModal(false)} disabled={connecting}>
                   Cancel
                 </Button>
