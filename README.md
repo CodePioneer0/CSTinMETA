@@ -32,6 +32,7 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 ### Key Features & Innovations
 
 - **One-Tap Sugar Logging** — Select an item type (Chai, Coffee, Sweets, etc.) and quantity; the system handles everything else automatically.
+- **Image-Based Sugar Logging** — Snap a photo of your food/drink; Cloudinary stores the image and IMAGGA's image-recognition API auto-detects the item type, removing the need for manual selection.
 - **Real-Time ML Risk Prediction** — A scikit-learn regression model predicts a 0–1 risk score based on BMI, daily steps, sleep, and sugar history.
 - **LLM-Generated Personalized Insights** — Groq Cloud API (LLaMA 3.1-8B) produces friendly, concise insight text and action explanations tailored to the user's context.
 - **Rule-Based Risk Tags & Actions** — Combines ML output with deterministic rules to classify risks (e.g., `ENERGY_CRASH`, `SLEEP_DISRUPTION`) and suggest specific actions (e.g., `10_MIN_WALK`, `DRINK_WATER`).
@@ -71,12 +72,16 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 | Axios             | 1.13    | Internal HTTP calls to ML service    |
 | uuid              | 13.0    | Anonymous user ID generation         |
 | dotenv            | 17.2    | Environment variable management      |
+| Cloudinary        | 1.41    | Cloud image storage for food photos  |
+| Multer            | 2.0     | Multipart file upload middleware     |
+| multer-storage-cloudinary | 4.0 | Cloudinary storage engine for Multer |
 
 ### Database / Storage
 
 | Technology | Purpose                              |
 | ---------- | ------------------------------------ |
 | MongoDB    | Primary data store (7 collections)   |
+| Cloudinary | Cloud image storage for sugar log photos |
 
 ### Machine Learning
 
@@ -87,6 +92,12 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 | joblib                      | Model & encoder serialization            |
 | pandas                      | Feature preprocessing                    |
 | Groq Cloud API (LLaMA 3.1) | LLM-generated insight text & explanations |
+
+### Image Recognition
+
+| Technology | Purpose                                            |
+| ---------- | -------------------------------------------------- |
+| IMAGGA API | Image tagging — detects food/drink type from photos |
 
 ### Deployment / Infrastructure
 
@@ -108,11 +119,13 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 │                  │       │                  │       │                  │
 └──────────────────┘       └────────┬─────────┘       └────────┬─────────┘
                                     │                          │
-                                    ▼                          ▼
-                           ┌──────────────────┐       ┌──────────────────┐
-                           │    MongoDB        │       │  Groq Cloud API  │
-                           │    (Mongoose)     │       │  (LLaMA 3.1 8B) │
-                           └──────────────────┘       └──────────────────┘
+                           ┌────────┼─────────┐                ▼
+                           │        │         │       ┌──────────────────┐
+                           ▼        ▼         ▼       │  Groq Cloud API  │
+                  ┌────────────┐ ┌────────┐ ┌───────┐ │  (LLaMA 3.1 8B) │
+                  │ Cloudinary │ │MongoDB │ │IMAGGA │ └──────────────────┘
+                  │ (Images)   │ │(Data)  │ │(Tags) │
+                  └────────────┘ └────────┘ └───────┘
 ```
 
 ### Component Responsibilities
@@ -123,9 +136,11 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 | **Express Backend** | REST API handling authentication, sugar logging, gamification logic, health data, and history   |
 | **FastAPI ML Svc**  | Loads pre-trained scikit-learn model, applies rule-based classification, calls Groq LLM         |
 | **MongoDB**         | Stores users, sugar events, gamification, insights, actions, health data, and reward logs        |
+| **Cloudinary**      | Stores uploaded food/drink images and returns a public URL saved with the sugar event             |
+| **IMAGGA API**      | Analyses uploaded images and returns tags used to auto-detect the sugar item type                 |
 | **Groq Cloud API**  | Generates natural-language insight text and action explanations from structured context           |
 
-### Data Flow (Sugar Log)
+### Data Flow (Sugar Log — Manual)
 
 1. User selects a sugar item and quantity on the frontend.
 2. Frontend sends `POST /api/sugar/log` with `itemType`, `quantity`, and `timestamp`.
@@ -136,6 +151,16 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 7. ML service returns `risk_tag`, `risk_score`, `insight_text`, `suggested_action`, and `explanation`.
 8. Backend saves an `Insight` and a pending `Action`, then returns the full response (sugar event + gamification data + insight + action) to the frontend.
 9. Frontend displays the InsightResult page with risk score, insight text, and a button to complete the suggested action.
+
+### Data Flow (Sugar Log — Image)
+
+1. User uploads a photo of their food/drink on the frontend.
+2. Frontend sends `POST /api/sugar/log-image` with the image file (multipart/form-data), optional `quantity`, and `timestamp`.
+3. **Multer** middleware uploads the image to **Cloudinary** (`sugar_logs` folder) and returns a public URL.
+4. Backend calls the **IMAGGA API** with the Cloudinary image URL to get image tags (e.g., "coffee", "cake", "soda").
+5. The `detectFoodItem()` function maps IMAGGA tags to a valid `itemType` (e.g., tags containing "coffee" or "espresso" → `COFFEE`). If no match is found, it defaults to `OTHER`.
+6. Backend saves the `SugarEvent` (including the `imageUrl` field) and follows the same gamification → ML prediction → insight pipeline as the manual flow.
+7. The response includes the auto-detected `detectedItemType` so the frontend can display what was recognized.
 
 ---
 
@@ -177,6 +202,11 @@ MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/<dbname>
 JWT_SECRET=your_jwt_secret_key_here
 ML_SERVICE_URL=http://localhost:8000
 PORT=5000
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+IMAGGA_API_KEY=your_imagga_api_key
+IMAGGA_API_SECRET=your_imagga_api_secret
 ```
 
 #### ML Service — `ml_service/.env`
@@ -217,6 +247,7 @@ VITE_APP_URL=http://localhost:5000
 | POST   | `/api/auth/signup`            | Upgrades anonymous user with email/password               |
 | POST   | `/api/auth/login`             | Email/password login; returns JWT (30-day expiry)         |
 | POST   | `/api/sugar/log`              | Logs sugar event → gamification → ML prediction → insight |
+| POST   | `/api/sugar/log-image`        | Upload food image → auto-detect item type → log sugar event |
 | POST   | `/api/sugar/action/complete`  | Marks action as completed; awards XP                      |
 | GET    | `/api/dashboard`              | Returns sugar score, XP, level, streak, today's logs      |
 | GET    | `/api/health/permissions`     | Returns current health permission flags                   |
@@ -237,6 +268,22 @@ VITE_APP_URL=http://localhost:5000
 | Name     | Purpose                                                 | Endpoint                                          | Auth Method             |
 | -------- | ------------------------------------------------------- | ------------------------------------------------- | ----------------------- |
 | Groq API | Generate natural-language insight text and explanations  | `https://api.groq.com/openai/v1/chat/completions` | Bearer token (`GROQ_API_KEY`) |
+
+### External API — IMAGGA
+
+| Name      | Purpose                                                  | Endpoint                             | Auth Method                         |
+| --------- | -------------------------------------------------------- | ------------------------------------ | ----------------------------------- |
+| IMAGGA API | Image tagging — detects food/drink type from uploaded photos | `https://api.imagga.com/v2/tags`    | Basic auth (`IMAGGA_API_KEY:IMAGGA_API_SECRET`) |
+
+The IMAGGA API is called from the backend when a user uploads a food image via `/api/sugar/log-image`. The returned tags are matched against known sugar item types (CHAI, COFFEE, SWEETS, etc.) using keyword heuristics. If no recognizable food item is found, the type defaults to `OTHER`.
+
+### External Service — Cloudinary
+
+| Name       | Purpose                                            | Auth Method                                    |
+| ---------- | -------------------------------------------------- | ---------------------------------------------- |
+| Cloudinary | Cloud image upload & storage for food/drink photos | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
+
+Images are uploaded to the `sugar_logs` folder on Cloudinary. The returned public URL is stored in the `SugarEvent.imageUrl` field and also passed to IMAGGA for tag detection.
 
 The Groq API is called from the ML service using the **LLaMA 3.1-8B Instant** model. It receives structured context (BMI, steps, sleep, risk score, risk tag, suggested action) and returns JSON with `insight_text` (<=20 words) and `explanation` (<=25 words).
 
@@ -397,6 +444,46 @@ curl -X POST http://localhost:5000/api/sugar/log \
 }
 ```
 
+**Log Sugar via Image:**
+
+```bash
+curl -X POST http://localhost:5000/api/sugar/log-image \
+  -H "authToken: <your_jwt_token>" \
+  -F "image=@/path/to/coffee.jpg" \
+  -F "quantity=1" \
+  -F "timestamp=2026-02-13T10:30:00.000Z"
+```
+
+**Response:**
+
+```json
+{
+  "message": "Sugar event logged successfully",
+  "detectedItemType": "COFFEE",
+  "sugarEvent": {
+    "itemType": "COFFEE",
+    "quantity": 1,
+    "date": "2026-02-13",
+    "timeOfDay": "MORNING",
+    "imageUrl": "https://res.cloudinary.com/<cloud>/image/upload/v.../sugar_logs/abc123.jpg"
+  },
+  "pointsAwarded": 8,
+  "basePoints": 5,
+  "bonusPoints": 3,
+  "surpriseReward": false,
+  "streakCount": 3,
+  "xp": 166,
+  "level": 2,
+  "insight": {
+    "riskTag": "ENERGY_CRASH",
+    "riskScore": 0.68,
+    "insightText": "Your coffee adds to today's sugar load, risking an energy dip.",
+    "suggestedAction": "DRINK_WATER",
+    "explanation": "Water helps offset caffeine-induced dehydration."
+  }
+}
+```
+
 **ML Predict (direct):**
 
 ```bash
@@ -459,6 +546,11 @@ Required environment variables:
 | `JWT_SECRET`     | Secret key for JWT signing                    |
 | `ML_SERVICE_URL` | URL of the deployed ML service                |
 | `PORT`           | Server port (default: 5000)                   |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name                  |
+| `CLOUDINARY_API_KEY`    | Cloudinary API key                     |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret                  |
+| `IMAGGA_API_KEY`        | IMAGGA API key for image tagging       |
+| `IMAGGA_API_SECRET`     | IMAGGA API secret                      |
 
 ### ML Service (Python Host)
 
@@ -488,6 +580,8 @@ Required files (must be included in deployment):
 | Backend → ML Service    | `ML_SERVICE_URL=http://localhost:8000` | Set to deployed ML service URL                 |
 | Backend → MongoDB       | `MONGO_URI` in `.env`                  | Use production MongoDB Atlas connection string |
 | ML Service → Groq       | `GROQ_API_KEY` in `.env`              | Same key works in production                   |
+| Backend → Cloudinary    | `CLOUDINARY_*` vars in `.env`         | Same credentials work in production            |
+| Backend → IMAGGA        | `IMAGGA_*` vars in `.env`             | Same credentials work in production            |
 
 ### Production CORS
 
@@ -509,6 +603,7 @@ Add your production frontend URL to the `allowedOrigins` array in `Backend/serve
 3. **Click "Get Started"** → Complete onboarding with sample data (e.g., DOB: 2000-01-15, Gender: MALE, Height: 175, Weight: 70).
 4. **Navigate to Health Sync** → Submit sample health data (e.g., steps: 5000, sleepMinutes: 420).
 5. **Log a sugar item** → Select "CHAI", quantity 1. Observe the InsightResult page showing risk score, AI-generated insight, risk tag, and suggested action.
+5b. **Log via image** → Upload a photo of a food/drink. Verify the system auto-detects the item type (e.g., a coffee photo → `COFFEE`) and produces the same insight flow.
 6. **Complete the action** → Click the action completion button. Verify XP is awarded (7 XP if within 30 min, 3 XP otherwise).
 7. **Log multiple items** → Log 3+ items in one day to see risk tags change (e.g., `STOP_MORE_SUGAR` action triggers).
 8. **Check Dashboard** → Verify sugar score ring decreases with more logs (100 minus 20 per log), XP bar fills, streak updates.
@@ -530,6 +625,7 @@ Add your production frontend URL to the `allowedOrigins` array in `Backend/serve
 - Sugar gram estimation uses a static lookup table per item type (e.g., CHAI = 12g, COLD_DRINK = 35g).
 - The Groq LLM prompt explicitly avoids medical/diagnostic language; insights are wellness-oriented, not medical advice.
 - The `estimatedSugarGrams` field in the ML request is computed server-side and not user-editable.
+- Image-based logging relies on IMAGGA's general-purpose image tagging; accuracy varies for ambiguous or uncommon food items (defaults to `OTHER` when unrecognized).
 
 ---
 
@@ -547,6 +643,7 @@ Add your production frontend URL to the `allowedOrigins` array in `Backend/serve
 - **Native health API integration** — Direct Google Fit and Apple HealthKit APIs for automatic step/sleep/heart rate syncing.
 - **Mobile-responsive UI** — Adapt the glassmorphic layout for smartphones and tablets.
 - **Social features** — Leaderboards, friend challenges, and shared streaks.
+- **Improved image detection** — Fine-tune IMAGGA tag mapping or integrate a custom food-classification model for higher accuracy.
 - **Custom sugar items** — Let users define custom food items with their own sugar gram estimates.
 - **Push notifications** — Remind users to log sugar, complete actions, and maintain streaks.
 - **Weekly/monthly reports** — Trend analysis, sugar breakdown by item type, and comparative metrics over time.
