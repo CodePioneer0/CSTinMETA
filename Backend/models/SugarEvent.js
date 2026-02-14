@@ -46,6 +46,11 @@ const SugarEventSchema = new mongoose.Schema(
       index: true
     },
 
+    imageUrl: {
+      type: String,
+      default: null
+    },
+
     timeOfDay: {
       type: String,
       enum: ["MORNING", "AFTERNOON", "EVENING", "NIGHT"],

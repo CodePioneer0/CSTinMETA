@@ -15,6 +15,60 @@ dotenv.config();
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL;
 
+const cloudinary = require("cloudinary").v2;
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "sugar_logs",
+        allowed_formats: ["jpg", "png", "jpeg"]
+    }
+});
+const upload = multer({ storage: storage });
+
+async function detectFoodItem(imageUrl) {
+    try {
+        const apiKey = process.env.IMAGGA_API_KEY;
+        const apiSecret = process.env.IMAGGA_API_SECRET;
+        const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+
+        const response = await axios.get(`https://api.imagga.com/v2/tags?image_url=${encodeURIComponent(imageUrl)}`, {
+            headers: { Authorization: `Basic ${auth}` }
+        });
+
+        const tags = response.data.result.tags;
+        if (!tags || tags.length === 0) return "OTHER";
+
+        const validTypes = ["CHAI", "COFFEE", "SWEETS", "COLD_DRINK", "PACKAGED_SNACK", "ICE_CREAM", "CHOCOLATE", "JUICE"];
+
+        for (const tagObj of tags) {
+            const tagName = tagObj.tag.en.toUpperCase().replace(" ", "_");
+            if (validTypes.includes(tagName)) return tagName;
+
+            if (tagName.includes("COFFEE") || tagName.includes("ESPRESSO") || tagName.includes("LATTE")) return "COFFEE";
+            if (tagName.includes("TEA") || tagName.includes("CHAI")) return "CHAI";
+            if (tagName.includes("CAKE") || tagName.includes("DESSERT") || tagName.includes("PASTRY") || tagName.includes("COOKIE") || tagName.includes("DONUT")) return "SWEETS";
+            if (tagName.includes("SODA") || tagName.includes("COLA") || tagName.includes("CARBONATED")) return "COLD_DRINK";
+            if (tagName.includes("CHIPS") || tagName.includes("SNACK") || tagName.includes("CRISPS")) return "PACKAGED_SNACK";
+            if (tagName.includes("ICE_CREAM") || tagName.includes("GELATO")) return "ICE_CREAM";
+            if (tagName.includes("CHOCOLATE") || tagName.includes("CANDY")) return "CHOCOLATE";
+            if (tagName.includes("JUICE") || tagName.includes("SMOOTHIE")) return "JUICE";
+        }
+        return "OTHER";
+    } catch (error) {
+        console.error("Imagga Error:", error.message);
+        return "OTHER";
+    }
+}
+
 function getDateString(dateObj) {
     return dateObj.toISOString().split("T")[0];
 }
@@ -54,7 +108,7 @@ function estimateSugarGrams(itemType) {
 
 //log sugar event
 router.post("/log", auth, [
-    body("itemType").notEmpty().withMessage("itemType is required").isIn(["CHAI","COFFEE","SWEETS","COLD_DRINK","PACKAGED_SNACK","ICE_CREAM","CHOCOLATE","JUICE","OTHER"]).withMessage("Invalid itemType"),
+    body("itemType").notEmpty().withMessage("itemType is required").isIn(["CHAI", "COFFEE", "SWEETS", "COLD_DRINK", "PACKAGED_SNACK", "ICE_CREAM", "CHOCOLATE", "JUICE", "OTHER"]).withMessage("Invalid itemType"),
     body("quantity").optional().isInt({ gt: 0 }).withMessage("quantity must be a positive number"),
     body("timestamp", "timestamp is required").isISO8601().withMessage("timestamp must be a valid ISO 8601 date-time")
 ], async (req, res) => {
@@ -78,193 +132,9 @@ router.post("/log", auth, [
             return res.status(400).json({ message: "Complete onboarding first" });
         }
         const { itemType, quantity, timestamp } = req.body;
-        const timeStampObj = timestamp ? new Date(timestamp) : new Date();
-        const date = getDateString(timeStampObj);
 
-        const timeOfDay = getTimeofDay(timeStampObj);
-
-        const sugarEvent = new SugarEvent({
-            userId: user._id,
-            itemType,
-            quantity,
-            timestamp: timeStampObj,
-            date,
-            timeOfDay
-        });
-
-        await sugarEvent.save();
-
-        //get gamification record
-        let gamification = await Gamification.findOne({ userId: user._id });
-
-        if (!gamification) {
-            gamification = new Gamification({
-                userId: user._id,
-                xp: 0,
-                level: 1,
-                streakCount: 0,
-                bestStreak: 0,
-                lastLogDate: null,
-                badges: []
-            });
-        }
-
-        //streak logic
-        if (!gamification.lastLogDate) {
-            gamification.streakCount = 1;
-        } else if (gamification.lastLogDate === date) {
-            //same day, no change
-        } else if (isYesterday(gamification.lastLogDate, date)) {
-            gamification.streakCount += 1;
-        } else {
-            gamification.streakCount = 1;
-        }
-
-        gamification.lastLogDate = date;
-        gamification.bestStreak = Math.max(gamification.bestStreak, gamification.streakCount);
-
-        //xp logic
-        let basePoints = 5;
-        let bonusPoints = 0;
-        //bonus if user logs before 6pm
-        if (timeStampObj.getHours() < 18) {
-            bonusPoints += 3;
-        }
-        // Variable reward (random bonus)
-        const randomRoll = Math.random();
-        let surpriseReward = false;
-
-        if (randomRoll < 0.6) {
-            bonusPoints += 0;
-        } else if (randomRoll < 0.8) {
-            bonusPoints += 2;
-            surpriseReward = true;
-        } else if (randomRoll < 0.95) {
-            bonusPoints += 5;
-            surpriseReward = true;
-        } else {
-            bonusPoints += 10;
-            surpriseReward = true;
-        }
-
-        const totalPoints = basePoints + bonusPoints;
-        gamification.xp += totalPoints;
-
-        //level up logic
-        gamification.level = Math.floor(gamification.xp / 100) + 1;
-
-        // Badge logic
-        if (!gamification.badges.includes("FIRST_LOG")) {
-            gamification.badges.push("FIRST_LOG");
-        }
-
-        if (gamification.streakCount >= 3 && !gamification.badges.includes("DAY_3_STREAK")) {
-            gamification.badges.push("DAY_3_STREAK");
-        }
-
-        if (gamification.streakCount >= 7 && !gamification.badges.includes("DAY_7_STREAK")) {
-            gamification.badges.push("DAY_7_STREAK");
-        }
-
-        if (gamification.streakCount >= 30 && !gamification.badges.includes("DAY_30_STREAK")) {
-            gamification.badges.push("DAY_30_STREAK");
-        }
-
-        await gamification.save();
-        // Save reward log
-        await RewardLog.create({
-            userId: user._id,
-            eventType: "SUGAR_LOG",
-            referenceId: sugarEvent._id,
-            basePoints,
-            bonusPoints,
-            totalPoints,
-            surpriseReward
-        });
-        //fetching health record for today
-        const healthToday = await HealthDaily.findOne({ userId: user._id, date });
-        const stepsToday = healthToday ? healthToday.steps : 0;
-        const sleepMinutes = healthToday ? healthToday.sleepMinutes : 0;
-        const sugarCountToday = await SugarEvent.countDocuments({ userId: user._id, date });
-        // weekly sugar count (last 7 days including today)
-        const weekStart = new Date(timeStampObj);
-        weekStart.setDate(weekStart.getDate() - 6);
-        weekStart.setHours(0, 0, 0, 0);
-
-        const weekEnd = new Date(timeStampObj);
-        weekEnd.setHours(23, 59, 59, 999);
-
-        const sugarCountWeek = await SugarEvent.countDocuments({
-            userId: user._id,
-            timestamp: { $gte: weekStart, $lte: weekEnd }
-        });
-
-
-        const estimatedUnitSugar = estimateSugarGrams(itemType);
-        const finalQuantity = quantity || 1;
-        const totalEstimatedSugar = estimatedUnitSugar * finalQuantity;
-
-        //ML features
-        const features = {
-            bmi: user.bmi,
-            steps_today: stepsToday,
-            sleep_minutes: sleepMinutes,
-            time_of_day: timeOfDay,
-            sugar_type: itemType,
-            sugar_count_today: sugarCountToday,
-            sugar_count_week: sugarCountWeek,
-            estimated_sugar_grams: totalEstimatedSugar
-        };
-        //Calling Ml microservice
-        let mlResult = null;
-        try {
-            const mlResponse = await axios.post(`${ML_SERVICE_URL}/predict`, features);
-            mlResult = mlResponse.data;
-        } catch (error) {
-            // fallback if ML service fails
-            mlResult = {
-                risk_tag: "HIGH_SUGAR_HABIT",
-                risk_score: 0.5,
-                insight_text: "Frequent sugar intake can affect energy and sleep quality.",
-                suggested_action: "DRINK_WATER",
-                explanation: "Default fallback suggestion"
-            };
-        }
-
-        //save insight
-        const insight = await Insight.create({
-            userId: user._id,
-            sugarEventId: sugarEvent._id,
-            riskTag: mlResult.risk_tag,
-            riskScore: mlResult.risk_score,
-            insightText: mlResult.insight_text,
-            suggestedAction: mlResult.suggested_action,
-            explanation: mlResult.explanation,
-            modelVersion: "v1"
-        });
-        // Create pending action
-        const action = await Action.create({
-            userId: user._id,
-            sugarEventId: sugarEvent._id,
-            actionType: mlResult.suggested_action,
-            status: "PENDING",
-            suggestedAt: new Date()
-        });
-
-        return res.status(201).json({
-            message: "Sugar event logged successfully",
-            sugarEvent,
-            pointsAwarded: totalPoints,
-            basePoints,
-            bonusPoints,
-            surpriseReward,
-            streakCount: gamification.streakCount,
-            bestStreak: gamification.bestStreak,
-            xp: gamification.xp,
-            level: gamification.level,
-            insight,
-            action
-        });
+        const result = await processSugarLog(user, itemType, quantity, timestamp);
+        return res.status(201).json(result);
 
     } catch (error) {
         console.log(error);
@@ -347,5 +217,234 @@ router.post("/action/complete", auth, async (req, res) => {
 });
 
 
+
+
+async function processSugarLog(user, itemType, quantity, timestamp, imageUrl = null) {
+    const timeStampObj = timestamp ? new Date(timestamp) : new Date();
+    const date = getDateString(timeStampObj);
+    const timeOfDay = getTimeofDay(timeStampObj);
+
+    const estimatedUnitSugar = estimateSugarGrams(itemType);
+    const finalQuantity = quantity || 1;
+    const totalEstimatedSugar = estimatedUnitSugar * finalQuantity;
+
+    const sugarEvent = new SugarEvent({
+        userId: user._id,
+        itemType,
+        quantity,
+        timestamp: timeStampObj,
+        date,
+        timeOfDay,
+        imageUrl,
+        estimatedSugarGrams: totalEstimatedSugar
+    });
+
+    await sugarEvent.save();
+
+    //get gamification record
+    let gamification = await Gamification.findOne({ userId: user._id });
+
+    if (!gamification) {
+        gamification = new Gamification({
+            userId: user._id,
+            xp: 0,
+            level: 1,
+            streakCount: 0,
+            bestStreak: 0,
+            lastLogDate: null,
+            badges: []
+        });
+    }
+
+    //streak logic
+    if (!gamification.lastLogDate) {
+        gamification.streakCount = 1;
+    } else if (gamification.lastLogDate === date) {
+        //same day, no change
+    } else if (isYesterday(gamification.lastLogDate, date)) {
+        gamification.streakCount += 1;
+    } else {
+        gamification.streakCount = 1;
+    }
+
+    gamification.lastLogDate = date;
+    gamification.bestStreak = Math.max(gamification.bestStreak, gamification.streakCount);
+
+    //xp logic
+    let basePoints = 5;
+    let bonusPoints = 0;
+    //bonus if user logs before 6pm
+    if (timeStampObj.getHours() < 18) {
+        bonusPoints += 3;
+    }
+    // Variable reward (random bonus)
+    const randomRoll = Math.random();
+    let surpriseReward = false;
+
+    if (randomRoll < 0.6) {
+        bonusPoints += 0;
+    } else if (randomRoll < 0.8) {
+        bonusPoints += 2;
+        surpriseReward = true;
+    } else if (randomRoll < 0.95) {
+        bonusPoints += 5;
+        surpriseReward = true;
+    } else {
+        bonusPoints += 10;
+        surpriseReward = true;
+    }
+
+    const totalPoints = basePoints + bonusPoints;
+    gamification.xp += totalPoints;
+
+    //level up logic
+    gamification.level = Math.floor(gamification.xp / 100) + 1;
+
+    // Badge logic
+    if (!gamification.badges.includes("FIRST_LOG")) {
+        gamification.badges.push("FIRST_LOG");
+    }
+
+    if (gamification.streakCount >= 3 && !gamification.badges.includes("DAY_3_STREAK")) {
+        gamification.badges.push("DAY_3_STREAK");
+    }
+
+    if (gamification.streakCount >= 7 && !gamification.badges.includes("DAY_7_STREAK")) {
+        gamification.badges.push("DAY_7_STREAK");
+    }
+
+    if (gamification.streakCount >= 30 && !gamification.badges.includes("DAY_30_STREAK")) {
+        gamification.badges.push("DAY_30_STREAK");
+    }
+
+    await gamification.save();
+    // Save reward log
+    await RewardLog.create({
+        userId: user._id,
+        eventType: "SUGAR_LOG",
+        referenceId: sugarEvent._id,
+        basePoints,
+        bonusPoints,
+        totalPoints,
+        surpriseReward
+    });
+    //fetching health record for today
+    const healthToday = await HealthDaily.findOne({ userId: user._id, date });
+    const stepsToday = healthToday ? healthToday.steps : 0;
+    const sleepMinutes = healthToday ? healthToday.sleepMinutes : 0;
+    const sugarCountToday = await SugarEvent.countDocuments({ userId: user._id, date });
+    // weekly sugar count (last 7 days including today)
+    const weekStart = new Date(timeStampObj);
+    weekStart.setDate(weekStart.getDate() - 6);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(timeStampObj);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    const sugarCountWeek = await SugarEvent.countDocuments({
+        userId: user._id,
+        timestamp: { $gte: weekStart, $lte: weekEnd }
+    });
+
+
+
+    //ML features
+    const features = {
+        bmi: user.bmi,
+        steps_today: stepsToday,
+        sleep_minutes: sleepMinutes,
+        time_of_day: timeOfDay,
+        sugar_type: itemType,
+        sugar_count_today: sugarCountToday,
+        sugar_count_week: sugarCountWeek,
+        estimated_sugar_grams: totalEstimatedSugar
+    };
+    //Calling Ml microservice
+    let mlResult = null;
+    try {
+        const mlResponse = await axios.post(`${ML_SERVICE_URL}/predict`, features);
+        mlResult = mlResponse.data;
+    } catch (error) {
+        // fallback if ML service fails
+        mlResult = {
+            risk_tag: "HIGH_SUGAR_HABIT",
+            risk_score: 0.5,
+            insight_text: "Frequent sugar intake can affect energy and sleep quality.",
+            suggested_action: "DRINK_WATER",
+            explanation: "Default fallback suggestion"
+        };
+    }
+
+    //save insight
+    const insight = await Insight.create({
+        userId: user._id,
+        sugarEventId: sugarEvent._id,
+        riskTag: mlResult.risk_tag,
+        riskScore: mlResult.risk_score,
+        insightText: mlResult.insight_text,
+        suggestedAction: mlResult.suggested_action,
+        explanation: mlResult.explanation,
+        modelVersion: "v1"
+    });
+    // Create pending action
+    const action = await Action.create({
+        userId: user._id,
+        sugarEventId: sugarEvent._id,
+        actionType: mlResult.suggested_action,
+        status: "PENDING",
+        suggestedAt: new Date()
+    });
+
+    return {
+        message: "Sugar event logged successfully",
+        sugarEvent,
+        pointsAwarded: totalPoints,
+        basePoints,
+        bonusPoints,
+        surpriseReward,
+        streakCount: gamification.streakCount,
+        bestStreak: gamification.bestStreak,
+        xp: gamification.xp,
+        level: gamification.level,
+        insight,
+        action
+    };
+}
+
+router.post("/log-image", auth, upload.single("image"), async (req, res) => {
+    try {
+        const { anonymousId } = req.user;
+        const user = await User.findOne({ anonymousId });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (!user.onboardingCompleted) {
+            return res.status(400).json({ message: "Complete onboarding first" });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: "Image is required" });
+        }
+
+        const imageUrl = req.file.path;
+        console.log("Analyzing image at:", imageUrl);
+
+        const itemType = await detectFoodItem(imageUrl);
+        console.log("Detected item type:", itemType);
+
+        const quantity = req.body.quantity ? parseInt(req.body.quantity) : 1;
+        const timestamp = req.body.timestamp || new Date().toISOString();
+
+        const result = await processSugarLog(user, itemType, quantity, timestamp, imageUrl);
+        return res.status(201).json({
+            ...result,
+            detectedItemType: itemType
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
 
 module.exports = router;
