@@ -79,7 +79,7 @@ export default function InsightResult() {
       if (sugarEvent?._id) {
         await completeAction(sugarEvent._id);
         setActionDone(true);
-        toast.success(`Action completed! +50 XP earned 🎉`);
+        toast.success(`Action completed!🎉`);
       } else {
         // Just simulate if no event ID (e.g. forced demo)
         setActionDone(true);
