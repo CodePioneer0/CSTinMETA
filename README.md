@@ -31,7 +31,7 @@ Young adults consume sugar throughout the day — in chai, coffee, cold drinks, 
 
 ### Key Features & Innovations
 
-- **One-Tap Sugar Logging** — Select an item type (Chai, Coffee, Sweets, etc.) and quantity; the system handles everything else automatically.
+- **One-Tap Sugar Logging** —  Select an item type (Chai, Coffee, Sweets, etc.) and quantity; the system handles everything else automatically.
 - **Image-Based Sugar Logging** — Snap a photo of your food/drink; Cloudinary stores the image and IMAGGA's image-recognition API auto-detects the item type, removing the need for manual selection.
 - **Real-Time ML Risk Prediction** — A scikit-learn regression model predicts a 0–1 risk score based on BMI, daily steps, sleep, and sugar history.
 - **LLM-Generated Personalized Insights** — Groq Cloud API (LLaMA 3.1-8B) produces friendly, concise insight text and action explanations tailored to the user's context.
